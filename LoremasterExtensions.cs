@@ -109,6 +109,23 @@ public static class LoremasterExtensions
     }
 
     // ─────────────────────────────────────────────────────────────────────────
+    // Per-player notification helpers
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // Returns the player's personal preference for a notify flag (default: false).
+    public static bool Notify(this Player player, FakeBool flag) =>
+        player.GetProperty(flag) ?? false;
+
+    // Toggles a notify flag and confirms to the player. Returns the new state.
+    public static bool ToggleNotify(this Player player, FakeBool flag, string label)
+    {
+        var next = !player.Notify(flag);
+        player.SetProperty(flag, next);
+        player.SendMessage($"[Loremaster] {label} notifications {(next ? "enabled" : "disabled")}.");
+        return next;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
     // Completion bonus helpers
     // ─────────────────────────────────────────────────────────────────────────
 
@@ -187,7 +204,7 @@ public static class LoremasterExtensions
         if (bonusXp > 0)
         {
             player.GrantXP(bonusXp, XpType.Quest, ShareType.None);
-            if (PatchClass.Settings.NotifyQuest)
+            if (player.Notify(LMBool.NotifyQuestXp))
                 player.SendMessage($"[Loremaster] First solve of {questName} awarded {bonusXp:N0} bonus XP!");
         }
     }
@@ -224,7 +241,7 @@ public static class LoremasterExtensions
                 item.EnterWorld();
                 player.SendMessage($"[Loremaster] Your inventory was full — {item.Name} dropped at your feet.");
             }
-            else if (PatchClass.Settings.NotifyQuest)
+            else if (player.Notify(LMBool.NotifyQuest))
             {
                 player.SendMessage($"[Loremaster] Repeat solve of {questName} rewarded: {item.Name}!");
             }
@@ -265,11 +282,40 @@ public static class LoremasterExtensions
         {
             if (previousCount < threshold && newCount >= threshold)
             {
-                var message = string.Format(PatchClass.Settings.MilestoneBroadcastFormat, player.Name, threshold);
+                var bonusQp = PatchClass.Settings.MilestoneBonusQP.TryGetValue(threshold, out var qp) ? qp : 0f;
+                if (bonusQp > 0)
+                    player.IncQuestPoints(bonusQp);
+
+                var message = string.Format(PatchClass.Settings.MilestoneBroadcastFormat,
+                    player.Name, Ordinal(threshold), (int)bonusQp);
                 foreach (var online in PlayerManager.GetAllOnline())
                     online.SendMessage(message, ChatMessageType.Broadcast);
                 ModManager.Log($"[Loremaster] Milestone broadcast: {message}");
             }
         }
     }
+
+    private static string Ordinal(int n)
+    {
+        var mod100 = n % 100;
+        if (mod100 >= 11 && mod100 <= 13) return $"{n}th";
+        return (n % 10) switch
+        {
+            1 => $"{n}st",
+            2 => $"{n}nd",
+            3 => $"{n}rd",
+            _ => $"{n}th"
+        };
+    }
+}
+
+// Per-player notify preference IDs (FakeBool 11000–11004, safe Loremaster range).
+// Stored on the character — persist across sessions, toggled via /qb <flag>.
+internal static class LMBool
+{
+    internal const FakeBool NotifyQuest          = (FakeBool)11000; // QP gains/losses
+    internal const FakeBool NotifyKillXp         = (FakeBool)11001; // kill XP boost
+    internal const FakeBool NotifyQuestXp        = (FakeBool)11002; // quest XP boost
+    internal const FakeBool NotifyKillLuminance  = (FakeBool)11003; // kill luminance boost
+    internal const FakeBool NotifyQuestLuminance = (FakeBool)11004; // quest luminance boost
 }

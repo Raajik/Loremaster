@@ -31,56 +31,100 @@ public class PatchClass(BasicMod mod, string settingsName = "Settings.json") : B
     // Player commands
     // ─────────────────────────────────────────────────────────────────────────
 
-    [CommandHandler("qp", AccessLevel.Player, CommandHandlerFlag.RequiresWorld,
-        "Shows your current Quest Points and XP multiplier.")]
-    public static void HandleQuestPoints(Session session, params string[] parameters)
+    [CommandHandler("qb", AccessLevel.Player, CommandHandlerFlag.RequiresWorld,
+        "Shows your Quest Points and XP multiplier. Type /qb help for all subcommands.")]
+    public static void HandleQuests(Session session, params string[] parameters)
     {
         var player = session.Player;
         if (player is null) return;
-        var count  = player.QuestManager?.GetQuests().Count(x => x.HasSolves()) ?? 0;
-        var qp     = player.GetProperty(FakeFloat.QuestBonus) ?? 0;
-        var bonus  = player.QuestBonus();
+
+        if (parameters.Length > 0)
+        {
+            switch (parameters[0].ToLowerInvariant())
+            {
+                case "list":
+                    var quests = player.QuestManager?.GetQuests() ?? new List<CharacterPropertiesQuestRegistry>();
+                    var sb = new StringBuilder();
+                    sb.AppendLine("Quest Name / Completions / QP Value");
+                    sb.AppendLine(new string('-', 50));
+                    foreach (var quest in quests)
+                    {
+                        if (!Settings.QuestBonuses.TryGetValue(quest.QuestName, out var pts))
+                            pts = Settings.DefaultPoints;
+                        sb.AppendLine($"{quest.QuestName,-35} x{quest.NumTimesCompleted,-4} {pts} QP");
+                    }
+                    player.UpdateQuestPoints();
+                    var listQp    = player.GetProperty(FakeFloat.QuestBonus) ?? 0;
+                    var listBonus = player.QuestBonus();
+                    sb.AppendLine(new string('-', 50));
+                    sb.AppendLine($"Total: {listQp} QP → {listBonus:P2} XP multiplier");
+                    player.SendMessage(sb.ToString());
+                    return;
+
+                case "help":
+                    player.SendMessage(
+                        "[Loremaster] /qb subcommands:\n" +
+                        "  /qb               — show Quest Points, XP multiplier, and quest counts\n" +
+                        "  /qb list          — show all quests with completions and QP value\n" +
+                        "  /qb help          — show this help message\n" +
+                        "\nToggle personal notifications (per-character, persists across sessions):\n" +
+                        "  /qb NotifyAll            — enable or disable all notifications at once\n" +
+                        "  /qb NotifyQuest          — QP gains and losses\n" +
+                        "  /qb NotifyKillXp         — kill XP multiplier messages\n" +
+                        "  /qb NotifyQuestXp        — quest XP multiplier messages\n" +
+                        "  /qb NotifyKillLuminance  — kill luminance multiplier messages\n" +
+                        "  /qb NotifyQuestLuminance — quest luminance multiplier messages");
+                    return;
+
+                case "notifyall":
+                    // If all are on, turn all off; otherwise turn all on.
+                    var allOn = player.Notify(LMBool.NotifyQuest)
+                             && player.Notify(LMBool.NotifyKillXp)
+                             && player.Notify(LMBool.NotifyQuestXp)
+                             && player.Notify(LMBool.NotifyKillLuminance)
+                             && player.Notify(LMBool.NotifyQuestLuminance);
+                    var next = !allOn;
+                    player.SetProperty(LMBool.NotifyQuest,          next);
+                    player.SetProperty(LMBool.NotifyKillXp,         next);
+                    player.SetProperty(LMBool.NotifyQuestXp,        next);
+                    player.SetProperty(LMBool.NotifyKillLuminance,  next);
+                    player.SetProperty(LMBool.NotifyQuestLuminance, next);
+                    player.SendMessage($"[Loremaster] All notifications {(next ? "enabled" : "disabled")}.");
+                    return;
+
+                case "notifyquest":          player.ToggleNotify(LMBool.NotifyQuest,          "Quest QP");        return;
+                case "notifykillxp":         player.ToggleNotify(LMBool.NotifyKillXp,         "Kill XP");         return;
+                case "notifyquestxp":        player.ToggleNotify(LMBool.NotifyQuestXp,        "Quest XP");        return;
+                case "notifykillluminance":  player.ToggleNotify(LMBool.NotifyKillLuminance,  "Kill Luminance");  return;
+                case "notifyquestluminance": player.ToggleNotify(LMBool.NotifyQuestLuminance, "Quest Luminance"); return;
+                default:
+                    player.SendMessage($"[Loremaster] Unknown subcommand '{parameters[0]}'. Type /qb help for usage.");
+                    return;
+            }
+        }
+
+        // Default: show summary
+        player.UpdateQuestPoints();
+        var qp        = player.GetProperty(FakeFloat.QuestBonus) ?? 0;
+        var bonus     = player.QuestBonus();
+        var charCount = player.QuestManager?.GetQuests().Count(x => x.HasSolves()) ?? 0;
 
         if (Settings.UseAccountWideQuests)
         {
             var accountCount = player.GetAccountUniqueQuestCount();
             player.SendMessage(
+                $"Quest Points: {qp}\n" +
+                $"XP Multiplier: {bonus:P0}\n" +
                 $"Account-wide: {accountCount} unique quests solved.\n" +
-                $"This character: {count} quests.\n" +
-                $"Quest Points: {qp} QP → {bonus:P2} XP multiplier.");
+                $"This character: {charCount} quests.");
         }
         else
         {
-            player.SendMessage($"{count} quests solved for {qp} QP → {bonus:P2} XP multiplier.");
+            player.SendMessage(
+                $"Quest Points: {qp}\n" +
+                $"XP Multiplier: {bonus:P0}\n" +
+                $"This character: {charCount} quests.");
         }
-    }
-
-    [CommandHandler("qb", AccessLevel.Player, CommandHandlerFlag.RequiresWorld,
-        "Lists all your quests with their Quest Point values and updates your bonus.")]
-    public static void HandleQuests(Session session, params string[] parameters)
-    {
-        var player = session.Player;
-        if (player is null) return;
-        var quests = player.QuestManager?.GetQuests() ?? new List<CharacterPropertiesQuestRegistry>();
-
-        var sb = new StringBuilder();
-        sb.AppendLine($"Quest Name / Completions / QP Value");
-        sb.AppendLine(new string('-', 50));
-
-        foreach (var quest in quests)
-        {
-            if (!Settings.QuestBonuses.TryGetValue(quest.QuestName, out var points))
-                points = Settings.DefaultPoints;
-            sb.AppendLine($"{quest.QuestName,-35} x{quest.NumTimesCompleted,-4} {points} QP");
-        }
-
-        player.UpdateQuestPoints();
-        var qp    = player.GetProperty(FakeFloat.QuestBonus) ?? 0;
-        var bonus = player.QuestBonus();
-        sb.AppendLine(new string('-', 50));
-        sb.AppendLine($"Total: {qp} QP → {bonus:P2} XP multiplier");
-
-        player.SendMessage(sb.ToString());
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -204,7 +248,7 @@ public class PatchClass(BasicMod mod, string settingsName = "Settings.json") : B
         if (qst.NumTimesCompleted == 1 && __instance.Creature is Player player)
         {
             player.IncQuestPoints(-qst.Value());
-            if (Settings.NotifyQuest)
+            if (player.Notify(LMBool.NotifyQuest))
                 player.SendMessage($"Removed {qst.Value()} QP on removing {questName}");
         }
     }
@@ -222,7 +266,7 @@ public class PatchClass(BasicMod mod, string settingsName = "Settings.json") : B
         if (qst.NumTimesCompleted == 1 && __instance.Creature is Player player)
         {
             player.IncQuestPoints(-qst.Value());
-            if (Settings.NotifyQuest)
+            if (player.Notify(LMBool.NotifyQuest))
                 player.SendMessage($"Removed {qst.Value()} QP on removing {questName}");
         }
     }
@@ -271,7 +315,7 @@ public class PatchClass(BasicMod mod, string settingsName = "Settings.json") : B
 
             // Quest Point increment
             player.IncQuestPoints(quest.Value());
-            if (Settings.NotifyQuest)
+            if (player.Notify(LMBool.NotifyQuest))
                 player.SendMessage($"Added {quest.Value()} QP from {questFormat}");
 
             var questName = QuestManager.GetQuestName(questFormat) ?? questFormat;
@@ -297,22 +341,42 @@ public class PatchClass(BasicMod mod, string settingsName = "Settings.json") : B
         {
             var quest = instance.GetQuest(QuestManager.GetQuestName(questFormat));
             player.IncQuestPoints(-quest.Value());
-            if (Settings.NotifyQuest)
+            if (player.Notify(LMBool.NotifyQuest))
                 player.SendMessage($"Subtracted {quest.Value()} QP from {questFormat}");
         }
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // XP multiplier — applies the ongoing QuestBonus to all XP gains
+    // XP / Luminance multiplier — applies the ongoing QuestBonus to all gains
     // ─────────────────────────────────────────────────────────────────────────
 
     [HarmonyPrefix]
     [HarmonyPatch(typeof(Player), nameof(Player.GrantXP), new Type[] { typeof(long), typeof(XpType), typeof(ShareType) })]
     public static void PreGrantXP(ref long amount, XpType xpType, ShareType shareType, ref Player __instance)
     {
-        if (Settings.NotifyExp)
-            __instance.SendMessage($"Boosting {amount:N0} XP by {__instance.QuestBonus():P2} → {(long)(amount * __instance.QuestBonus()):N0}");
+        var bonus = __instance.QuestBonus();
+        var total = (long)(amount * bonus);
 
-        amount = (long)(amount * __instance.QuestBonus());
+        var notify = xpType == XpType.Kill  && __instance.Notify(LMBool.NotifyKillXp)
+                  || xpType == XpType.Quest && __instance.Notify(LMBool.NotifyQuestXp);
+        if (notify)
+            __instance.SendMessage($"Earned {total:N0} XP! ({amount:N0} * {bonus:P0})");
+
+        amount = total;
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(Player), nameof(Player.EarnLuminance), new Type[] { typeof(long), typeof(XpType), typeof(ShareType) })]
+    public static void PreEarnLuminance(ref long amount, XpType xpType, ShareType shareType, ref Player __instance)
+    {
+        var bonus = __instance.QuestBonus();
+        var total = (long)(amount * bonus);
+
+        var notify = xpType == XpType.Kill  && __instance.Notify(LMBool.NotifyKillLuminance)
+                  || xpType == XpType.Quest && __instance.Notify(LMBool.NotifyQuestLuminance);
+        if (notify)
+            __instance.SendMessage($"Earned {total:N0} luminance! ({amount:N0} * {bonus:P0})");
+
+        amount = total;
     }
 }

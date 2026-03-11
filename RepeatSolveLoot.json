@@ -35,124 +35,61 @@
 
   "Groups": [
     {
-      "_comment": "Basic currency — always on, very common",
-      "Name": "Currency",
+      "_comment": "MMD — always on, very common",
+      "Name": "MMD",
       "Weight": 1000,
       "Wcids": [
-        273
+        20630
       ],
       "_wcid_names": {
-        "273": "Pyreal"
+        "20630": "Trade Note (250,000)"
       }
     },
     {
-      "_comment": "Salvage: hides, metals, cloth — uncommon. Set Weight to 0 to disable.",
-      "Name": "Salvage - Basic Materials",
-      "Weight": 0,
+      "_comment": "Useful Salvage — common reward. Set Weight to 0 to disable.",
+      "Name": "Salvage - Common",
+      "Weight": 800,
       "Wcids": [
-        20981, 20982, 20983, 20984, 20985,
-        20986, 20987, 20988, 20989, 20990,
-        20991, 20992, 20993, 20994, 20995
+        20985, 20986, 20988, 20993,
+        21055, 21059, 21073
       ],
       "_wcid_names": {
-        "20981": "Salvaged Armoredillo Hide",
-        "20982": "Salvaged Bronze",
-        "20983": "Salvaged Ceramic",
-        "20984": "Salvaged Gold",
         "20985": "Salvaged Granite",
         "20986": "Salvaged Iron",
-        "20987": "Salvaged Linen",
         "20988": "Salvaged Mahogany",
-        "20989": "Salvaged Oak",
-        "20990": "Salvaged Pine",
-        "20991": "Salvaged Reedshark Hide",
-        "20992": "Salvaged Satin",
         "20993": "Salvaged Steel",
-        "20994": "Salvaged Velvet",
-        "20995": "Salvaged Wool"
+        "21055": "Salvaged Ivory",
+        "21059": "Salvaged Leather",
+        "21073": "Salvaged Sandstone"
       }
     },
     {
-      "_comment": "Salvage: gems and specialty materials — uncommon. Set Weight to 0 to disable.",
-      "Name": "Salvage - Gems & Specialty",
-      "Weight": 0,
+      "_comment": "Foolproof Salvage — uncommon reward for repeat solves. Set Weight to 0 to disable.",
+      "Name": "Foolproof Salvage",
+      "Weight": 100,
       "Wcids": [
-        21034, 21035, 21036, 21037, 21038,
-        21039, 21040, 21041, 21042, 21043,
-        21044, 21045, 21046, 21047, 21048,
-        21049, 21050, 21051, 21052, 21053,
-        21054, 21055, 21056, 21057, 21058,
-        21059, 21060, 21061, 21062, 21063,
-        21064, 21065, 21066, 21067, 21068,
-        21069, 21070, 21071, 21072, 21073,
-        21074, 21075, 21076, 21077, 21078,
-        21079, 21080, 21081, 21082, 21083,
-        21084, 21085, 21086, 21087, 21088,
-        21089
+        30094, 30095, 30096, 30097, 30098, 30099, 30100,
+        30101, 30102, 30103, 30104, 30105, 30106
       ],
       "_wcid_names": {
-        "21034": "Salvaged Agate",
-        "21035": "Salvaged Amber",
-        "21036": "Salvaged Amethyst",
-        "21037": "Salvaged Aquamarine",
-        "21038": "Salvaged Azurite",
-        "21039": "Salvaged Black Garnet",
-        "21040": "Salvaged Black Opal",
-        "21041": "Salvaged Bloodstone",
-        "21042": "Salvaged Brass",
-        "21043": "Salvaged Carnelian",
-        "21044": "Salvaged Citrine",
-        "21045": "Salvaged Copper",
-        "21046": "Salvaged Diamond",
-        "21047": "Salvaged Ebony",
-        "21048": "Salvaged Emerald",
-        "21049": "Salvaged Fire Opal",
-        "21050": "Salvaged Green Garnet",
-        "21051": "Salvaged Green Jade",
-        "21052": "Salvaged Gromnie Hide",
-        "21053": "Salvaged Hematite",
-        "21054": "Salvaged Imperial Topaz",
-        "21055": "Salvaged Ivory",
-        "21056": "Salvaged Jet",
-        "21057": "Salvaged Lapis Lazuli",
-        "21058": "Salvaged Lavender Jade",
-        "21059": "Salvaged Leather",
-        "21060": "Salvaged Malachite",
-        "21061": "Salvaged Marble",
-        "21062": "Salvaged Moonstone",
-        "21063": "Salvaged Obsidian",
-        "21064": "Salvaged Onyx",
-        "21065": "Salvaged Opal",
-        "21066": "Salvaged Peridot",
-        "21067": "Salvaged Porcelain",
-        "21068": "Salvaged Pyreal",
-        "21069": "Salvaged Red Garnet",
-        "21070": "Salvaged Red Jade",
-        "21071": "Salvaged Rose Quartz",
-        "21072": "Salvaged Ruby",
-        "21073": "Salvaged Sandstone",
-        "21074": "Salvaged Sapphire",
-        "21075": "Salvaged Serpentine",
-        "21076": "Salvaged Silk",
-        "21077": "Salvaged Silver",
-        "21078": "Salvaged Smoky Quartz",
-        "21079": "Salvaged Sunstone",
-        "21080": "Salvaged Teak",
-        "21081": "Salvaged Tiger Eye",
-        "21082": "Salvaged Tourmaline",
-        "21083": "Salvaged Turquoise",
-        "21084": "Salvaged White Jade",
-        "21085": "Salvaged White Quartz",
-        "21086": "Salvaged White Sapphire",
-        "21087": "Salvaged Yellow Garnet",
-        "21088": "Salvaged Yellow Topaz",
-        "21089": "Salvaged Zircon"
+        "30094": "Foolproof Aquamarine",
+        "30095": "Foolproof Black Garnet",
+        "30096": "Foolproof Black Opal",
+        "30097": "Foolproof Emerald",
+        "30098": "Foolproof Fire Opal",
+        "30099": "Foolproof Imperial Topaz",
+        "30100": "Foolproof Jet",
+        "30101": "Foolproof Peridot",
+        "30102": "Foolproof Red Garnet",
+        "30103": "Foolproof Sunstone",
+        "30104": "Foolproof White Sapphire",
+        "30105": "Foolproof Yellow Topaz",
+        "30106": "Foolproof Zircon"
       }
     }
   ],
 
   "QuestOverrides": {
-    "_comment": "Per-quest loot tables. Key = quest internal name. Same Groups structure as above.",
     "PathwardenComplete": {
       "_comment": "Example override — Pathwarden gives better loot on repeats",
       "Groups": [
@@ -163,7 +100,7 @@
             20630
           ],
           "_wcid_names": {
-            "20630": "MMD"
+            "20630": "Trade Note (250,000)"
           }
         }
       ]
