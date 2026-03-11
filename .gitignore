@@ -1,0 +1,17 @@
+# Build output
+obj/
+bin/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docobj
+
+# Rider
+.idea/
+
+# ACE deployment output (separate from source)
+# The DLL lands in C:\ACE\Mods\Loremaster\ which is outside this folder,
+# so nothing to ignore there.

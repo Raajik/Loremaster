@@ -1,0 +1,10 @@
+{
+  "Name": "Loremaster",
+  "Author": "",
+  "Description": "Extended quest bonus system. Tracks account-wide unique quests, multiplies XP by quest progress, grants one-time XP and loot on first solves, and broadcasts server-wide milestone messages.",
+  "Version": "1.0",
+  "Enabled": true,
+  "HotReload": true,
+  "RegisterCommands": true,
+  "ACEVersion": "0.0"
+}
